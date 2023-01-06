@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/cursos")
@@ -34,5 +33,29 @@ public class CursosController {
     @ResponseStatus(code = HttpStatus.CREATED)
     public Curso create(@RequestBody Curso curso) {
         return cursoRepository.save(curso);
+    }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(code = HttpStatus.CREATED)
+    public ResponseEntity<Curso> update(@PathVariable Long id,
+                                        @RequestBody Curso curso) {
+        return cursoRepository.findById(id)
+                .map(cursoEncontrado -> {
+                    cursoEncontrado.setNome(curso.getNome());
+                    cursoEncontrado.setCategoria(curso.getCategoria());
+                    Curso atualizado = cursoRepository.save(cursoEncontrado);
+                    return ResponseEntity.status(HttpStatus.OK).body(atualizado);
+                })
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        return cursoRepository.findById(id)
+                .map(cursoEncontrado -> {
+                    cursoRepository.deleteById(id);
+                    return ResponseEntity.status(HttpStatus.NO_CONTENT).<Void>build();
+                })
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 }
